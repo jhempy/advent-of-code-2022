@@ -112,31 +112,27 @@ $forest = [
 	[1,0,1,2,1,1,3,2,4,1,2,0,3,2,2,3,3,3,3,5,5,0,5,5,0,0,1,0,3,5,5,1,5,2,2,1,6,3,0,5,3,2,5,2,6,6,3,3,0,4,2,0,0,3,4,2,1,4,4,2,1,5,5,1,4,4,1,2,0,4,4,4,2,3,2,1,5,2,5,3,5,0,0,3,2,4,1,2,3,3,4,1,3,0,0,1,0,0,2]
 ];
 
-
-
 $ymax = count($forest);
 $xmax = count($forest[0]);
 
-$count = $ymax + $ymax + (2 * ($xmax - 2));
+$max_scenic_score = 0;
 
-for ($i = 1; $i < $ymax - 1; $i++)
+for ($i = 0; $i < $ymax; $i++)
 {
-	for ($j = 1; $j < $xmax - 1; $j++)
+	for ($j = 0; $j < $xmax; $j++)
 	{
-		if (is_visible($i, $j))
-		{
-			echo "Visible!\n";
-			$count++;
-		}
-		else 
-		{
-			echo "NOT!\n";
-		}
+		echo "LOOP: $i, $j (", $forest[$i][$j], ")\n";
+
+		$score = scenic_score($i, $j);
+		$max_scenic_score = max([$score, $max_scenic_score]);
+
+		echo "\tScore is $score\n";
+		echo "\tMax is now $max_scenic_score\n\n\n";
 	}
 }
 
 
-echo "\n\n$count\n\n\n";
+echo "\n\n$max_scenic_score\n\n\n";
 
 echo "\n\nDone!\n";
 
@@ -170,6 +166,53 @@ function is_visible($ty, $tx)
 
 }
 
+function scenic_score($ty, $tx) 
+{
+	global $forest;
+	$n = $e = $s = $w = array();
+	$t = $forest[$ty][$tx];
 
+	for ($i = 0; $i < $ty; $i++)
+	{
+		array_push($n, $forest[$i][$tx]);
+	}
+	$n = array_reverse($n);
+	
+	$e = array_slice($forest[$ty], $tx + 1);
+
+	for ($i=$ty + 1; $i < count($forest); $i++)
+	{
+		array_push($s, $forest[$i][$tx]);
+	}
+
+	$w = array_reverse(array_slice($forest[$ty], 0, $tx));
+
+	// print_r($n);
+	// print_r($e);
+	// print_r($s);
+	// print_r($w);
+
+	$score = view_value($t, $n) * view_value($t, $e) * view_value($t, $s) * view_value($t, $w);
+
+	return $score;
+
+}
+
+function view_value($t, $view)
+{
+	$viewing = true;
+	$value = 0;
+	while ($viewing && $value < count($view))
+	{
+		if ($view[$value] >= $t) 
+		{
+			$viewing = false;
+		}
+		$value++;
+	}
+
+	echo "\tVIEW_VALUE of $t and [", join(',', $view), "] is $value\n";
+	return $value;
+}
 
 ?>
